@@ -69,6 +69,19 @@ export const updateProgress = async (
   }
 };
 
+export const getNotes = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId, courseId } = req.params;
+    const userCourse = await UserCourse.findOne({
+      userId,
+      courseId,
+    });
+    res.status(200).json(userCourse?.notes);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+};
+
 export const addNote = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userId, courseId } = req.params;
@@ -82,6 +95,55 @@ export const addNote = async (req: Request, res: Response): Promise<void> => {
 
     if (!userCourse) {
       res.status(404).json({ message: "User-Course relationship not found" });
+      return;
+    }
+
+    res.status(200).json(userCourse);
+  } catch (error) {
+    res.status(400).json({ message: error });
+  }
+};
+
+export const updateNote = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { userId, courseId, noteId } = req.params;
+    const { content } = req.body;
+
+    const userCourse = await UserCourse.findOneAndUpdate(
+      { userId, courseId, "notes.noteId": noteId },
+      { $set: { "notes.$.content": content } },
+      { new: true }
+    );
+
+    if (!userCourse) {
+      res.status(404).json({ message: "Note not found" });
+      return;
+    }
+
+    res.status(200).json(userCourse);
+  } catch (error) {
+    res.status(400).json({ message: error });
+  }
+};
+
+export const deleteNote = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { userId, courseId, noteId } = req.params;
+
+    const userCourse = await UserCourse.findOneAndUpdate(
+      { userId, courseId },
+      { $pull: { notes: { noteId } } },
+      { new: true }
+    );
+
+    if (!userCourse) {
+      res.status(404).json({ message: "Note not found" });
       return;
     }
 
