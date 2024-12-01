@@ -3,15 +3,21 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface IContent {
   contentId: string;
   type: string; // e.g., "video", "pdf"
-  title: string;
-  url: string;
+  title: string; // Title of the content
+  url: string; // Content URL
+}
+
+export interface IParentTopic {
+  parentId: string;
+  title: string; // e.g., "Milk Processing"
+  contents: IContent[];
 }
 
 export interface ICourse extends Document {
   courseId: string;
   title: string;
   category: string;
-  contents: IContent[];
+  parentTopics: IParentTopic[];
   createdBy: string; // Reference to the creator (could be a user ID)
   description: string;
   thumbnail: string; // URL to the course thumbnail
@@ -24,12 +30,18 @@ const ContentSchema: Schema = new Schema({
   url: { type: String, required: true },
 });
 
+const ParentTopicSchema: Schema = new Schema({
+  parentId: { type: String, required: true },
+  title: { type: String, required: true },
+  contents: [ContentSchema],
+});
+
 const CourseSchema: Schema = new Schema(
   {
     courseId: { type: String, required: true, unique: true },
     title: { type: String, required: true },
     category: { type: String, required: true },
-    contents: [ContentSchema],
+    parentTopics: [ParentTopicSchema],
     createdBy: { type: String, required: true },
     description: { type: String, required: true },
     thumbnail: { type: String, required: true },
