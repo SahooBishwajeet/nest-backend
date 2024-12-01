@@ -1,11 +1,20 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+export interface IContentProgress {
+  contentId: string;
+  status: string; // e.g., "Completed", "Paused", "In Progress"
+}
+
 export interface IUserCourse extends Document {
   userId: string; // Reference to the user
   courseId: string; // Reference to the course
   progress: {
     completedPercentage: number; // Percentage of the course completed
     lastAccessedContent: string; // Content ID of the last accessed item
+    contentStatus: {
+      parentTopicId: string; // Parent topic identifier
+      contents: IContentProgress[]; // Track progress for each content in the parent topic
+    }[];
   };
   notes: [
     {
@@ -14,10 +23,20 @@ export interface IUserCourse extends Document {
       timestamp: Date; // When the note was created
     }
   ];
-  enrollmentDate: Date; // Date of enrollment
-  completionDate?: Date; // (Optional) Completion date
+  enrollmentDate: Date;
+  completionDate?: Date;
   status: string; // e.g., "In Progress", "Completed"
 }
+
+const ContentProgressSchema: Schema = new Schema({
+  contentId: { type: String, required: true },
+  status: { type: String, default: "In Progress" },
+});
+
+const ParentTopicProgressSchema: Schema = new Schema({
+  parentTopicId: { type: String, required: true },
+  contents: [ContentProgressSchema],
+});
 
 const NoteSchema: Schema = new Schema({
   noteId: { type: String, required: true },
@@ -32,6 +51,7 @@ const UserCourseSchema: Schema = new Schema(
     progress: {
       completedPercentage: { type: Number, default: 0 },
       lastAccessedContent: { type: String },
+      contentStatus: [ParentTopicProgressSchema], // User-specific progress for each parent topic
     },
     notes: [NoteSchema],
     enrollmentDate: { type: Date, default: Date.now },
