@@ -82,6 +82,24 @@ export const getNotes = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+export const getNoteById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { userId, courseId, noteId } = req.params;
+    const userCourse = await UserCourse.findOne({
+      userId,
+      courseId,
+      "notes.noteId": noteId,
+    });
+    const note = userCourse?.notes.find((note) => note.noteId === noteId);
+    res.status(200).json(note);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+};
+
 export const addNote = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userId, courseId } = req.params;
