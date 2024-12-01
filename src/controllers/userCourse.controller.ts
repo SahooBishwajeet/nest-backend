@@ -26,6 +26,19 @@ export const getUserCourses = async (
   }
 };
 
+export const getUserCourseById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { userId, courseId } = req.params;
+    const userCourse = await UserCourse.findOne({ userId, courseId });
+    res.status(200).json(userCourse);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+};
+
 export const updateProgress = async (
   req: Request,
   res: Response
